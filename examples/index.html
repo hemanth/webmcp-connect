@@ -269,8 +269,8 @@
 
     <div class="connect-bar">
         <input type="text" id="url" placeholder="https://mcp.example.com/sse" value="">
-        <button id="connectBtn" onclick="doConnect()">Connect</button>
-        <button class="btn-secondary" id="disconnectBtn" onclick="doDisconnect()" disabled>Disconnect</button>
+        <button id="connectBtn">Connect</button>
+        <button class="btn-secondary" id="disconnectBtn" disabled>Disconnect</button>
     </div>
 
     <div class="status">
@@ -287,8 +287,8 @@
         <h3>Call: <code id="callToolName"></code></h3>
         <textarea id="callArgs" placeholder='{ "key": "value" }'>{}</textarea>
         <div class="actions">
-            <button onclick="doCall()">Run</button>
-            <button class="btn-secondary" onclick="closePanel()">Cancel</button>
+            <button id="callBtn">Run</button>
+            <button class="btn-secondary" id="cancelBtn">Cancel</button>
         </div>
     </div>
 
@@ -303,8 +303,15 @@
         let mcp = null;
         let selectedTool = null;
 
+        const $ = id => document.getElementById(id);
+
+        $('connectBtn').addEventListener('click', doConnect);
+        $('disconnectBtn').addEventListener('click', doDisconnect);
+        $('callBtn').addEventListener('click', doCall);
+        $('cancelBtn').addEventListener('click', closePanel);
+
         function log(msg, type = '') {
-            const el = document.getElementById('log');
+            const el = $('log');
             if (el.querySelector('.empty')) el.innerHTML = '';
             const entry = document.createElement('div');
             entry.className = `log-entry ${type}`;
@@ -314,15 +321,15 @@
             el.scrollTop = el.scrollHeight;
         }
 
-        window.doConnect = async () => {
-            const url = document.getElementById('url').value.trim();
+        async function doConnect() {
+            const url = $('url').value.trim();
             if (!url) return;
 
-            const dot = document.getElementById('dot');
-            const status = document.getElementById('statusText');
+            const dot = $('dot');
+            const status = $('statusText');
 
             log(`Connecting to ${url}...`, 'info');
-            document.getElementById('connectBtn').disabled = true;
+            $('connectBtn').disabled = true;
 
             try {
                 mcp = new WebMCP(url, {
@@ -336,7 +343,7 @@
 
                 dot.className = 'dot connected';
                 status.textContent = `Connected — ${result.tools.length} tools`;
-                document.getElementById('disconnectBtn').disabled = false;
+                $('disconnectBtn').disabled = false;
 
                 renderTools(result.tools);
 
@@ -347,27 +354,27 @@
                 dot.className = 'dot error';
                 status.textContent = `Error: ${err.message}`;
                 log(`Connection failed: ${err.message}`, 'error');
-                document.getElementById('connectBtn').disabled = false;
+                $('connectBtn').disabled = false;
             }
-        };
+        }
 
-        window.doDisconnect = () => {
+        function doDisconnect() {
             if (mcp) {
                 mcp.disconnect();
                 mcp = null;
             }
-            document.getElementById('dot').className = 'dot';
-            document.getElementById('statusText').textContent = 'Disconnected';
-            document.getElementById('toolsSection').style.display = 'none';
-            document.getElementById('callPanel').className = 'call-panel';
-            document.getElementById('connectBtn').disabled = false;
-            document.getElementById('disconnectBtn').disabled = true;
+            $('dot').className = 'dot';
+            $('statusText').textContent = 'Disconnected';
+            $('toolsSection').style.display = 'none';
+            $('callPanel').className = 'call-panel';
+            $('connectBtn').disabled = false;
+            $('disconnectBtn').disabled = true;
             log('Disconnected.', 'info');
-        };
+        }
 
         function renderTools(tools) {
-            const grid = document.getElementById('toolsGrid');
-            const section = document.getElementById('toolsSection');
+            const grid = $('toolsGrid');
+            const section = $('toolsSection');
             grid.innerHTML = '';
 
             if (!tools.length) {
@@ -383,30 +390,30 @@
           <div class="tool-name">${tool.name}</div>
           <div class="tool-desc">${tool.description || 'No description'}</div>
         `;
-                card.onclick = () => selectTool(tool);
+                card.onclick = () => selectTool(tool, card);
                 grid.appendChild(card);
             });
         }
 
-        window.selectTool = (tool) => {
+        function selectTool(tool, card) {
             selectedTool = tool;
-            document.getElementById('callToolName').textContent = tool.name;
-            document.getElementById('callArgs').value = JSON.stringify(
+            $('callToolName').textContent = tool.name;
+            $('callArgs').value = JSON.stringify(
                 Object.fromEntries(
                     Object.keys(tool.inputSchema?.properties || {}).map(k => [k, ''])
                 ), null, 2
             );
-            document.getElementById('callPanel').className = 'call-panel visible';
+            $('callPanel').className = 'call-panel visible';
 
             document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        };
+            card.classList.add('active');
+        }
 
-        window.doCall = async () => {
+        async function doCall() {
             if (!mcp || !selectedTool) return;
             let args;
             try {
-                args = JSON.parse(document.getElementById('callArgs').value);
+                args = JSON.parse($('callArgs').value);
             } catch {
                 log('Invalid JSON arguments', 'error');
                 return;
@@ -422,13 +429,13 @@
             } else {
                 log(`← ${JSON.stringify(result)}`, 'data');
             }
-        };
+        }
 
-        window.closePanel = () => {
-            document.getElementById('callPanel').className = 'call-panel';
+        function closePanel() {
+            $('callPanel').className = 'call-panel';
             selectedTool = null;
             document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('active'));
-        };
+        }
     </script>
 </body>
 
