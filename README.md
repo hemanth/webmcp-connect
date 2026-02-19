@@ -1,6 +1,6 @@
 # webmcp-connect
 
-Connect any MCP server to the browser via Chrome's [WebMCP API](https://nicolo.io/blog/2025-04-21-what-is-webmcp/).
+Connect any MCP server to the browser via the [WebMCP API](https://webmachinelearning.github.io/webmcp/).
 
 Three lines. That's it.
 
@@ -10,7 +10,7 @@ import { WebMCP } from 'webmcp-connect';
 const mcp = new WebMCP('https://mcp.example.com/sse');
 await mcp.connect();
 mcp.register();
-// Every tool on that server is now available to Chrome's built-in AI
+// Every tool on that server is now available to the browser's AI
 ```
 
 ```bash
@@ -40,7 +40,7 @@ console.log(tools.map(t => t.name));
 // ['create_issue', 'search_repos', 'get_file_contents', ...]
 
 github.register();
-// Chrome's AI can now create issues, search repos, read files
+// The AI can now create issues, search repos, read files
 ```
 
 ### Enrich every tool call with page context
@@ -154,7 +154,7 @@ Headers are merged into every request. `setAuth()` headers go first, custom head
 
 ## Requirements
 
-- Chrome 138+ with `chrome://flags/#enable-webmcp-testing`
+- A browser with [WebMCP](https://webmachinelearning.github.io/webmcp/) support
 - `connect()` and `callTool()` work without WebMCP — you just can't `register()`
 
 ## License
