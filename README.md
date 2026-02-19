@@ -9,8 +9,7 @@ import { WebMCP } from 'webmcp-connect';
 
 const mcp = new WebMCP('https://mcp.example.com/sse');
 await mcp.connect();
-mcp.register();
-// Every tool on that server is now available to the browser's AI
+// Done. Tools are auto-registered with the browser's AI.
 ```
 
 ```bash
@@ -39,7 +38,7 @@ const { tools } = await github.connect();
 console.log(tools.map(t => t.name));
 // ['create_issue', 'search_repos', 'get_file_contents', ...]
 
-github.register();
+github.register();  // or let autoRegister handle it
 // The AI can now create issues, search repos, read files
 ```
 
@@ -56,7 +55,6 @@ const mcp = new WebMCP('https://mcp.example.com/sse', {
 });
 
 await mcp.connect();
-mcp.register();
 // Every tool call now carries page context — the AI knows what you're looking at
 ```
 
@@ -133,6 +131,7 @@ Headers are merged into every request. `setAuth()` headers go first, custom head
 
 | Option | Type | Description |
 |--------|------|-------------|
+| `autoRegister` | `boolean` | Auto-register tools on connect (default: `true`) |
 | `headers` | `object` | Custom headers merged into every request |
 | `enrichContext` | `(name, args) => args` | Enrich tool args before proxying |
 | `onToolCall` | `(name, args) => void` | Called before each tool call |

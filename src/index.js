@@ -25,6 +25,9 @@ export class WebMCP {
         // Custom headers merged into every request
         this.headers = options.headers || {};
 
+        // Auto-register tools with WebMCP on connect (default: true)
+        this.autoRegister = options.autoRegister !== false;
+
         // Hooks
         this.onToolCall = options.onToolCall || null;
         this.onResponse = options.onResponse || null;
@@ -84,6 +87,11 @@ export class WebMCP {
         this.resources = await this._list('resources/list', 'resources');
 
         this.logger.log(`[webmcp-connect] Connected. ${this.tools.length} tools, ${this.prompts.length} prompts, ${this.resources.length} resources.`);
+
+        // Auto-register with WebMCP if available
+        if (this.autoRegister && typeof navigator !== 'undefined' && navigator.modelContext) {
+            this.register();
+        }
 
         return {
             serverInfo: this.serverInfo,
