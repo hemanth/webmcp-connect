@@ -26,20 +26,18 @@ Why should using an MCP tool require Cursor or Claude Desktop?
 
 ## Examples
 
-### Connect to a GitHub MCP server
+### Connect to GitHub Copilot MCP
 
 ```javascript
 import { WebMCP } from 'webmcp-connect';
 
-const github = new WebMCP('https://mcp-github.example.com/sse');
+const github = new WebMCP('https://api.githubcopilot.com/mcp/');
 github.setAuth({ type: 'bearer', token: 'ghp_...' });
 
 const { tools } = await github.connect();
 console.log(tools.map(t => t.name));
 // ['create_issue', 'search_repos', 'get_file_contents', ...]
-
-github.register();  // or let autoRegister handle it
-// The AI can now create issues, search repos, read files
+// Tools are auto-registered — the AI can now create issues, search repos, read files
 ```
 
 ### Enrich every tool call with page context
