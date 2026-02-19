@@ -7,7 +7,7 @@ Three lines. That's it.
 ```javascript
 import { WebMCP } from 'webmcp-connect';
 
-const mcp = new WebMCP('https://mcp.example.com/sse');
+const mcp = new WebMCP('https://api.githubcopilot.com/mcp/');
 await mcp.connect();
 // Done. Tools are auto-registered with the browser's AI.
 ```
@@ -45,7 +45,7 @@ github.register();  // or let autoRegister handle it
 ### Enrich every tool call with page context
 
 ```javascript
-const mcp = new WebMCP('https://mcp.example.com/sse', {
+const mcp = new WebMCP('https://api.githubcopilot.com/mcp/', {
   enrichContext: (toolName, args) => ({
     ...args,
     page_url: location.href,
@@ -61,7 +61,7 @@ await mcp.connect();
 ### Audit every tool call
 
 ```javascript
-const mcp = new WebMCP('https://mcp.example.com/sse', {
+const mcp = new WebMCP('https://api.githubcopilot.com/mcp/', {
   onToolCall: (name, args) => {
     analytics.track('mcp_tool_call', { tool: name, args });
   },
@@ -104,7 +104,7 @@ mcp.register([
 ### Call tools directly (no WebMCP needed)
 
 ```javascript
-const mcp = new WebMCP('https://mcp.example.com/sse');
+const mcp = new WebMCP('https://api.githubcopilot.com/mcp/');
 await mcp.connect();
 
 // Use tools programmatically — works without navigator.modelContext
@@ -115,7 +115,7 @@ console.log(result.content[0].text);
 ### Custom headers
 
 ```javascript
-const mcp = new WebMCP('https://mcp.example.com/sse', {
+const mcp = new WebMCP('https://api.githubcopilot.com/mcp/', {
   headers: {
     'X-Tenant-ID': 'acme-corp',
     'Authorization': 'Bearer sk-...',
