@@ -43,6 +43,21 @@ const result = await github.callTool('search_repos', { query: 'webmcp' });
 console.log(result.content[0].text);
 ```
 
+### With Chrome's Prompt API
+
+```javascript
+const github = new WebMCP('https://api.githubcopilot.com/mcp/', { autoRegister: false });
+github.setAuth({ type: 'bearer', token: 'ghp_...' });
+const { tools } = await github.connect();
+
+const session = await window.ai.languageModel.create({
+  systemPrompt: `Tools: ${tools.map(t => `${t.name}(${Object.keys(t.inputSchema?.properties || {})}) — ${t.description}`).join('; ')}. Reply as JSON: { "tool": "...", "args": { ... } }`
+});
+
+const { tool, args } = JSON.parse(await session.prompt('Find repos about webmcp'));
+const result = await github.callTool(tool, args);
+```
+
 ### Enrich every tool call with page context
 
 ```javascript
