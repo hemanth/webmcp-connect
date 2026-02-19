@@ -152,6 +152,12 @@ Headers are merged into every request. `setAuth()` headers go first, custom head
 | `setAuth({ type, token })` | — | Set auth (`bearer`, `apikey`, `basic`) |
 | `disconnect()` | — | Clear context + logout |
 
+## CORS
+
+This module runs in the browser, so the MCP server must allow cross-origin requests. If you control the server, add `Access-Control-Allow-Origin` headers. Most MCP SDKs support this out of the box.
+
+No CORS = the browser blocks the request before it reaches your code. That's a browser security feature, not a bug.
+
 ## Requirements
 
 - A browser with [WebMCP](https://webmachinelearning.github.io/webmcp/) support
