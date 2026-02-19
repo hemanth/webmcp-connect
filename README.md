@@ -35,9 +35,12 @@ const github = new WebMCP('https://api.githubcopilot.com/mcp/');
 github.setAuth({ type: 'bearer', token: 'ghp_...' });
 
 const { tools } = await github.connect();
-console.log(tools.map(t => t.name));
-// ['create_issue', 'search_repos', 'get_file_contents', ...]
-// Tools are auto-registered — the AI can now create issues, search repos, read files
+// Tools are now registered with navigator.modelContext (if available)
+// — the browser's AI can call them autonomously.
+
+// You can also call tools directly:
+const result = await github.callTool('search_repos', { query: 'webmcp' });
+console.log(result.content[0].text);
 ```
 
 ### Enrich every tool call with page context
