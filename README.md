@@ -11,9 +11,9 @@ npm install webmcp-connect
 ## Usage
 
 ```javascript
-import { WebMCPBridge } from 'webmcp-connect';
+import { WebMCP } from 'webmcp-connect';
 
-const bridge = new WebMCPBridge('https://mcp.example.com');
+const bridge = new WebMCP('https://mcp.example.com');
 await bridge.connect();
 bridge.register();
 ```
@@ -23,7 +23,7 @@ That's it. Tools are now available to Chrome's AI agent.
 ## With context enrichment
 
 ```javascript
-const bridge = new WebMCPBridge('https://mcp.example.com', {
+const bridge = new WebMCP('https://mcp.example.com', {
   enrichContext: (toolName, args) => ({
     ...args,
     user_locale: navigator.language,
@@ -42,7 +42,7 @@ bridge.register();
 ## With auth
 
 ```javascript
-const bridge = new WebMCPBridge('https://mcp.example.com');
+const bridge = new WebMCP('https://mcp.example.com');
 bridge.setAuth({ type: 'bearer', token: 'sk-...' });
 await bridge.connect();
 ```
@@ -52,7 +52,7 @@ Supports `bearer`, `apikey`, and `basic` auth. OAuth with PKCE is handled by the
 ## Custom headers
 
 ```javascript
-const bridge = new WebMCPBridge('https://mcp.example.com', {
+const bridge = new WebMCP('https://mcp.example.com', {
   headers: {
     'X-Custom-Header': 'value',
     'Authorization': 'Bearer sk-...',
@@ -81,7 +81,7 @@ Mix remote MCP tools with local browser capabilities.
 
 ## API
 
-### `new WebMCPBridge(serverUrl, options?)`
+### `new WebMCP(serverUrl, options?)`
 
 | Option | Type | Description |
 |--------|------|-------------|

@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { WebMCPBridge } from '../src/index.js';
+import { WebMCP } from '../src/index.js';
 
 // Mock fetch globally
 function mockFetch(responses) {
@@ -24,7 +24,7 @@ function mockFetch(responses) {
     });
 }
 
-describe('WebMCPBridge', () => {
+describe('WebMCP', () => {
     let originalFetch;
 
     beforeEach(() => {
@@ -36,7 +36,7 @@ describe('WebMCPBridge', () => {
     });
 
     it('constructs with defaults', () => {
-        const bridge = new WebMCPBridge('https://mcp.example.com');
+        const bridge = new WebMCP('https://mcp.example.com');
         assert.equal(bridge.serverUrl, 'https://mcp.example.com');
         assert.deepEqual(bridge.tools, []);
         assert.deepEqual(bridge.prompts, []);
@@ -74,7 +74,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 4, result: { resources: [] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         const result = await bridge.connect();
 
         assert.equal(result.tools.length, 2);
@@ -86,7 +86,7 @@ describe('WebMCPBridge', () => {
     it('connect() throws on auth error', async () => {
         globalThis.fetch = mockFetch([{ status: 401 }]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         await assert.rejects(() => bridge.connect(), /Authentication required/);
     });
 
@@ -95,7 +95,7 @@ describe('WebMCPBridge', () => {
             body: { jsonrpc: '2.0', id: 1, error: { code: -32600, message: 'Bad request' } },
         }]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         await assert.rejects(() => bridge.connect(), /Bad request/);
     });
 
@@ -113,7 +113,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, result: { content: [{ type: 'text', text: 'hello back' }] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         await bridge.connect();
 
         const result = await bridge.callTool('echo', { msg: 'hello' });
@@ -130,7 +130,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, result: { content: [{ type: 'text', text: 'ok' }] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', {
+        const bridge = new WebMCP('https://mcp.example.com', {
             logger: { log: () => { } },
             enrichContext: (name, args) => {
                 calls.push({ name, args });
@@ -161,7 +161,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, result: { content: [{ type: 'text', text: 'ok' }] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', {
+        const bridge = new WebMCP('https://mcp.example.com', {
             logger: { log: () => { } },
             onToolCall: (name, args) => hookCalls.push({ name, args }),
         });
@@ -182,7 +182,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, result: { content: [{ type: 'text', text: 'raw' }] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', {
+        const bridge = new WebMCP('https://mcp.example.com', {
             logger: { log: () => { } },
             onResponse: (name, result) => ({
                 content: [{ type: 'text', text: 'transformed' }],
@@ -203,7 +203,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 4, result: { resources: [] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', {
+        const bridge = new WebMCP('https://mcp.example.com', {
             logger: { log: () => { } },
             headers: { 'X-Custom': 'value' },
         });
@@ -222,7 +222,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 4, result: { resources: [] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         bridge.setAuth({ type: 'bearer', token: 'sk-test' });
         await bridge.connect();
 
@@ -240,7 +240,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, error: { code: -1, message: 'Tool broke' } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', {
+        const bridge = new WebMCP('https://mcp.example.com', {
             logger: { log: () => { } },
             onError: (name, err) => errors.push({ name, message: err.message }),
         });
@@ -262,7 +262,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, result: { messages: [{ role: 'user', content: { type: 'text', text: 'hello' } }] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         await bridge.connect();
         const result = await bridge.getPrompt('greeting', { name: 'World' });
 
@@ -278,7 +278,7 @@ describe('WebMCPBridge', () => {
             { body: { jsonrpc: '2.0', id: 5, result: { contents: [{ text: 'file content' }] } } },
         ]);
 
-        const bridge = new WebMCPBridge('https://mcp.example.com', { logger: { log: () => { } } });
+        const bridge = new WebMCP('https://mcp.example.com', { logger: { log: () => { } } });
         await bridge.connect();
         const result = await bridge.readResource('file:///test.txt');
 

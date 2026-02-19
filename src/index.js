@@ -5,14 +5,14 @@ export { MCPAuth } from './auth.js';
 export { parseSSEorJSON } from './parser.js';
 
 /**
- * WebMCP Bridge — connect any MCP server to Chrome's WebMCP API.
+ * WebMCP — connect any MCP server to Chrome's WebMCP API.
  *
  * @example
- * const bridge = new WebMCPBridge('https://mcp.example.com');
- * await bridge.connect();
+ * const mcp = new WebMCP('https://mcp.example.com');
+ * await mcp.connect();
  * // Tools are now registered with navigator.modelContext
  */
-export class WebMCPBridge {
+export class WebMCP {
     constructor(serverUrl, options = {}) {
         this.serverUrl = serverUrl;
         this.auth = new MCPAuth(serverUrl);
@@ -54,7 +54,7 @@ export class WebMCPBridge {
             params: {
                 protocolVersion: '2024-11-05',
                 capabilities: { tools: {} },
-                clientInfo: { name: 'webmcp-bridge', version: '1.0.0' },
+                clientInfo: { name: 'webmcp-connect', version: '1.0.0' },
             },
         };
 
@@ -232,4 +232,4 @@ export class WebMCPBridge {
     }
 }
 
-export default WebMCPBridge;
+export default WebMCP;
