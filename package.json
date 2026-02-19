@@ -26,5 +26,8 @@
         "type": "git",
         "url": "https://github.com/hemanth/webmcp-connect"
     },
-    "homepage": "https://github.com/hemanth/webmcp-connect"
+    "homepage": "https://github.com/hemanth/webmcp-connect",
+    "scripts": {
+        "test": "node --test test/*.test.js"
+    }
 }
