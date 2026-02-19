@@ -50,12 +50,21 @@ const github = new WebMCP('https://api.githubcopilot.com/mcp/', { autoRegister: 
 github.setAuth({ type: 'bearer', token: 'ghp_...' });
 const { tools } = await github.connect();
 
-const session = await window.ai.languageModel.create({
-  systemPrompt: `Tools: ${tools.map(t => `${t.name}(${Object.keys(t.inputSchema?.properties || {})}) — ${t.description}`).join('; ')}. Reply as JSON: { "tool": "...", "args": { ... } }`
+// Map MCP tools → Prompt API tools with execute callbacks
+const session = await LanguageModel.create({
+  tools: tools.map(t => ({
+    name: t.name,
+    description: t.description,
+    inputSchema: t.inputSchema,
+    async execute(args) {
+      const result = await github.callTool(t.name, args);
+      return JSON.stringify(result.content);
+    }
+  }))
 });
 
-const { tool, args } = JSON.parse(await session.prompt('Find repos about webmcp'));
-const result = await github.callTool(tool, args);
+// The model calls the right tool(s) automatically
+const result = await session.prompt('Find repos about webmcp');
 ```
 
 ### Enrich every tool call with page context
