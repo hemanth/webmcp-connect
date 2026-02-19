@@ -1,71 +1,88 @@
 # webmcp-connect
 
-Connect any MCP server to Chrome's WebMCP API.
+Connect any MCP server to the browser via Chrome's [WebMCP API](https://nicolo.io/blog/2025-04-21-what-is-webmcp/).
 
-You have MCP servers. You want them in the browser. This module connects to a remote MCP server, discovers its tools, and registers them with `navigator.modelContext`.
+Three lines. That's it.
+
+```javascript
+import { WebMCP } from 'webmcp-connect';
+
+const mcp = new WebMCP('https://mcp.example.com/sse');
+await mcp.connect();
+mcp.register();
+// Every tool on that server is now available to Chrome's built-in AI
+```
 
 ```bash
 npm install webmcp-connect
 ```
 
-## Usage
+## Why?
+
+MCP servers are everywhere — GitHub, Slack, databases, you name it. But they're trapped behind desktop clients and CLI tools.
+
+Why should using an MCP tool require Cursor or Claude Desktop?
+
+`webmcp-connect` gives any webpage access to any MCP server. The browser becomes the agent surface.
+
+## Examples
+
+### Connect to a GitHub MCP server
 
 ```javascript
 import { WebMCP } from 'webmcp-connect';
 
-const bridge = new WebMCP('https://mcp.example.com');
-await bridge.connect();
-bridge.register();
+const github = new WebMCP('https://mcp-github.example.com/sse');
+github.setAuth({ type: 'bearer', token: 'ghp_...' });
+
+const { tools } = await github.connect();
+console.log(tools.map(t => t.name));
+// ['create_issue', 'search_repos', 'get_file_contents', ...]
+
+github.register();
+// Chrome's AI can now create issues, search repos, read files
 ```
 
-That's it. Tools are now available to Chrome's AI agent.
-
-## With context enrichment
+### Enrich every tool call with page context
 
 ```javascript
-const bridge = new WebMCP('https://mcp.example.com', {
+const mcp = new WebMCP('https://mcp.example.com/sse', {
   enrichContext: (toolName, args) => ({
     ...args,
-    user_locale: navigator.language,
-    user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    page_url: location.href,
+    page_title: document.title,
+    selected_text: window.getSelection().toString(),
   }),
-  onResponse: (toolName, result) => {
-    console.log(`[${toolName}]`, result);
+});
+
+await mcp.connect();
+mcp.register();
+// Every tool call now carries page context — the AI knows what you're looking at
+```
+
+### Audit every tool call
+
+```javascript
+const mcp = new WebMCP('https://mcp.example.com/sse', {
+  onToolCall: (name, args) => {
+    analytics.track('mcp_tool_call', { tool: name, args });
+  },
+  onResponse: (name, result) => {
+    console.log(`[${name}]`, result);
     return result;
   },
-});
-
-await bridge.connect();
-bridge.register();
-```
-
-## With auth
-
-```javascript
-const bridge = new WebMCP('https://mcp.example.com');
-bridge.setAuth({ type: 'bearer', token: 'sk-...' });
-await bridge.connect();
-```
-
-Supports `bearer`, `apikey`, and `basic` auth. OAuth with PKCE is handled by the `MCPAuth` class.
-
-## Custom headers
-
-```javascript
-const bridge = new WebMCP('https://mcp.example.com', {
-  headers: {
-    'X-Custom-Header': 'value',
-    'Authorization': 'Bearer sk-...',
+  onError: (name, err) => {
+    Sentry.captureException(err, { extra: { tool: name } });
   },
 });
 ```
 
-Custom headers are merged into every request. Auth headers from `setAuth()` are applied first, then your custom headers override.
-
-## Add page-local tools
+### Mix remote + local tools
 
 ```javascript
-bridge.register([
+await mcp.connect();
+
+mcp.register([
   {
     name: 'get_selection',
     description: 'Get the currently selected text on the page',
@@ -74,10 +91,41 @@ bridge.register([
       content: [{ type: 'text', text: window.getSelection().toString() }],
     }),
   },
+  {
+    name: 'get_page_html',
+    description: 'Get the full HTML of the current page',
+    inputSchema: { type: 'object', properties: {} },
+    execute: async () => ({
+      content: [{ type: 'text', text: document.documentElement.outerHTML }],
+    }),
+  },
 ]);
+// Remote MCP tools + page-local tools, all registered together
 ```
 
-Mix remote MCP tools with local browser capabilities.
+### Call tools directly (no WebMCP needed)
+
+```javascript
+const mcp = new WebMCP('https://mcp.example.com/sse');
+await mcp.connect();
+
+// Use tools programmatically — works without navigator.modelContext
+const result = await mcp.callTool('search', { query: 'webmcp' });
+console.log(result.content[0].text);
+```
+
+### Custom headers
+
+```javascript
+const mcp = new WebMCP('https://mcp.example.com/sse', {
+  headers: {
+    'X-Tenant-ID': 'acme-corp',
+    'Authorization': 'Bearer sk-...',
+  },
+});
+```
+
+Headers are merged into every request. `setAuth()` headers go first, custom headers override.
 
 ## API
 
@@ -101,13 +149,13 @@ Mix remote MCP tools with local browser capabilities.
 | `callTool(name, args)` | `result` | Call a tool |
 | `getPrompt(name, args)` | `result` | Get a prompt |
 | `readResource(uri)` | `result` | Read a resource |
-| `setAuth({ type, token })` | — | Set auth before connecting |
+| `setAuth({ type, token })` | — | Set auth (`bearer`, `apikey`, `basic`) |
 | `disconnect()` | — | Clear context + logout |
 
-## Browser requirements
+## Requirements
 
-- Chrome 146+ with `chrome://flags/#enable-webmcp-testing`
-- Without WebMCP, `connect()` and `callTool()` still work — you just can't `register()`
+- Chrome 138+ with `chrome://flags/#enable-webmcp-testing`
+- `connect()` and `callTool()` work without WebMCP — you just can't `register()`
 
 ## License
 
